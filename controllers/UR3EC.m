@@ -649,7 +649,7 @@ classdef UR3EC < handle & ParentChild & Tickable
             %clawQ = self.present_queue_claw.pull()
             %teleport attached children to end effector
             %ONLY move objects classified as "Rubbish" to the end effector!
-            if ~isequal(robot_q ~= self.current_q) | self.number_of_ticks == 1  %only animate if needs to be, or rendering for first time
+            if ~isequal(robot_q,self.current_q) | self.number_of_ticks == 1  %only animate if needs to be, or rendering for first time
                 self.robot.model.animate(robot_q);
                 self.current_q = robot_q;
             end

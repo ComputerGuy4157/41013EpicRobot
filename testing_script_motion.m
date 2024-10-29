@@ -70,13 +70,13 @@ end
 
 %% RUN SIMULATION
 
-times = createArray(1,3000,"double");
+times = createArray(1,30000,"double");
 i = 0;
 
-for i = 1:3000
+for i = 1:30000
     timeStart = tic;
     %Every tick, random chance to spawn a new Rubbish
-    if mod(i,50) == 0
+    if mod(i,75) == 0
         %Spawn Rubbish or Big Rubbish
         if rand > 0.2 %regular rubbish
             r = Rubbish('HalfSizedRedGreenBrick2.ply');
