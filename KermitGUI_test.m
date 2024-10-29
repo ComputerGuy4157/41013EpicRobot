@@ -37,55 +37,24 @@ ylim([-3 2]);
 zlim([-0.5 2]);
 
 % Declare global flags
+
 global eStop_triggered system_armed system_running
 eStop_triggered = false;
 system_armed = false;
 system_running = true;
 
+
 % Create UI buttons for emergency stop, rearm, and resume
 f = uifigure;
-stopButton = uibutton(f, 'Text', 'Emergency Stop', ...
-    'Position', [20, 20, 150, 30], ...
-    'ButtonPushedFcn', @(~, ~) triggerEStop());
-
-rearmButton = uibutton(f, 'Text', 'Rearm System', ...
-    'Position', [20, 60, 150, 30], ...
-    'ButtonPushedFcn', @(~, ~) rearmSystem());
-
-resumeButton = uibutton(f, 'Text', 'Resume System', ...
-    'Position', [20, 100, 150, 30], ...
-    'ButtonPushedFcn', @(~, ~) resumeSystem());
-
-% Emergency stop callback
-function triggerEStop()
-    global eStop_triggered system_running
-    eStop_triggered = true;
-    system_running = false; % Stop the system immediately
-end
-
-% Rearm callback: Allows the system to be started again but doesn’t start it
-function rearmSystem()
-    global eStop_triggered system_armed
-    if eStop_triggered
-        eStop_triggered = false;  % Disengage the eStop
-        system_armed = true;      % System is ready to start
-    end
-end
-
-% Resume callback: Resumes operations only if the system is armed
-function resumeSystem()
-    global system_running system_armed
-    if system_armed
-        system_running = true;
-        system_armed = false;  % Un-arm the system after resuming
-    end
-end
+f.AutoResizeChildren = 'off';
+ss = StatisticsReporter(f, robot_array, vrjoystick(1));
 
 % Main simulation loop
 times = createArray(1, 3000, "double");
 for i = 1:3000
     % Check emergency stop
     if ~system_running
+        ss.update();
         pause(0.01);  % Pause briefly to allow for button interactions
         continue;     % Skip to next iteration if system is not running
     end
@@ -124,6 +93,8 @@ for i = 1:3000
         robot_array{j}.render();
     end
     hold off;
+
+    ss.update();
 
     drawnow;
     time = toc(timeStart);

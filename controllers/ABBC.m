@@ -4,6 +4,8 @@ classdef ABBC < handle & ParentChild & Tickable
         base_transform;
         present_queue_robot FIFO %Present queues
 
+        manualControl = false;
+
         pc_type = "RobotABBCController"
         detection(1,1) DetectionController
         detection_cubes(1,:) DetectionCube
@@ -76,7 +78,7 @@ classdef ABBC < handle & ParentChild & Tickable
             cube1_transform = cube1_transform * transl(0, 1.2, 0.5);
             cube1_transform = cube1_transform * trscale(0.2, 0.6, 0.5);
             cube1 = DetectionCube(detection,cube1_transform);
-            cube1.render();
+            %cube1.render();
             self.detection_cubes(1) = cube1;
 
             bin1_transform = transform;
@@ -88,6 +90,18 @@ classdef ABBC < handle & ParentChild & Tickable
             self.calculate_p_dc_t(self.linkdata);
 
             self.render();
+        end
+
+        function force_submit_external(self, q_array)
+            self.present_queue_robot.force_replace(q_array);
+        end
+
+        function activate_manual_control(self, wants_activation)
+            if wants_activation
+                self.manualControl = true;
+            else
+                self.manualControl = false;
+            end
         end
 
         function total_control_activate(self, controller_handle, controller_handle2)
@@ -140,7 +154,7 @@ classdef ABBC < handle & ParentChild & Tickable
 
             self.current_tick_timeout = self.current_tick_timeout - 1;
 
-            if ~self.total_control && self.current_tick_timeout <= 0
+            if all([~self.total_control; self.current_tick_timeout <= 0; ~self.manualControl])
 
                 switch self.state
                     case 0
@@ -668,6 +682,8 @@ classdef ABBC < handle & ParentChild & Tickable
                 %disp(new_q);
                 self.present_queue_robot.force_replace(new_q);
 
+                elseif self.manualControl 
+
             end
 
 
@@ -696,7 +712,7 @@ classdef ABBC < handle & ParentChild & Tickable
             %clawQ = self.present_queue_claw.pull()
             %teleport attached children to end effector
             %ONLY move objects classified as "Rubbish" to the end effector!
-            if robot_q ~= self.current_q | self.number_of_ticks == 1  %only animate if needs to be, or rendering for first time
+            if ~isequal(robot_q,self.current_q) | self.number_of_ticks == 1  %only animate if needs to be, or rendering for first time
                 self.robot.model.animate(robot_q);
                 c = self.robot.model.fkine(robot_q);
                 if ~isempty(self.attached_child)

@@ -2,7 +2,7 @@ classdef UltimateCollisionChecker < handle & ParentChild & Tickable
     properties
         pc_type = "UCC";
         detection_cube_cache;
-        collision_handle_array;
+        collision_handle_array cell;
         time_since_called = 0;
         
     end
@@ -21,9 +21,12 @@ classdef UltimateCollisionChecker < handle & ParentChild & Tickable
             %must tick our cache
             self.detection_cube_cache.pull();
 
-            if self.time_since_called == 15;
+            if mod(self.number_of_ticks,15) == 0
                 for i = 1:length(self.collision_handle_array);
-                    self.collision_handle_array(i).draw_handle.FaceAlpha = 0;
+                    self.collision_handle_array{1,i}.draw_handle.FaceAlpha = 0;
+                end
+                if ~isempty(self.collision_handle_array)
+                    self.collision_handle_array(1,:) = [];
                 end
             end
 
@@ -209,7 +212,7 @@ classdef UltimateCollisionChecker < handle & ParentChild & Tickable
         end
 
         function drawCollisionData(self, row, robot1, offendingcube, robot2, offendingcube2, dcube_array)
-            self.collision_handle_array = DetectionCube.empty(1,0);
+            %self.collision_handle_array = DetectionCube.empty(1,0);
             robot_1_cubes = dcube_array{row, robot1};
             robot_2_cubes = dcube_array{row, robot2};
 
@@ -224,8 +227,9 @@ classdef UltimateCollisionChecker < handle & ParentChild & Tickable
                 handle.FaceColor = [0.4660 0.6740 0.1880];
                 handle.FaceAlpha = 0.4;
                 end
-                self.collision_handle_array(end + 1) = robot_1_cubes{i};
+                
             end
+            self.collision_handle_array(end+1,1:length(robot_1_cubes)) = robot_1_cubes;
             for j = 1:length(robot_2_cubes)
                 robot_2_cubes{j}.needsRedraw = 1;
                 robot_2_cubes{j}.needsRepatch = 1;
@@ -237,14 +241,16 @@ classdef UltimateCollisionChecker < handle & ParentChild & Tickable
                 handle.FaceColor = [0.4660 0.6740 0.1880];
                 handle.FaceAlpha = 0.4;
                 end
-                self.collision_handle_array(end + 1) = robot_2_cubes{j};
+                %self.collision_handle_array(end + 1) = robot_2_cubes{j};
             end
+            self.collision_handle_array(end,length(robot_1_cubes)+1:length(robot_2_cubes)+length(robot_1_cubes)) = robot_2_cubes;
         end
 
         
             
 
     end
+
 
     methods(Access = public)
         function f_custom_pc_logic(self) %called when Attach Parent from another object, must recreate cube cache
