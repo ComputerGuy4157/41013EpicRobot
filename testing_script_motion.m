@@ -1,4 +1,5 @@
 clear all;
+close all;
 
 %% INITALISE SCENE: create robots, conveyor belt, rubbish array and supporting elements
 
@@ -6,18 +7,9 @@ view(3);
 
 figure(1);
 
-drawnow();
-conveyor_belt = ConveyorBelt('ConveyorBeltFixed.PLY');
-
-conveyor_belt.set_transform_4by4(eye(4));
-
-a = Rubbish('HalfSizedRedGreenBrick2.ply');
-b = Rubbish('HalfSizedRedGreenBrick2.ply');
-c = Rubbish('HalfSizedRedGreenBrick2.ply');
+BuildScene
 
 dc = DetectionController;
-
-conveyor_belt.render();
 
 light('Style','local','Position',[ -1.5 0 2],'Parent',gca);
 
@@ -31,26 +23,16 @@ robot_array{end+1} = UR3EC(transl(-1.5,-0.4,0), dc, ucc);
 robot_array{end+1} = UR3EC(transl(-2.0,-0.4,0), dc, ucc);
 robot_array{end+1} = UR3EC(transl(-2.5,-0.4,0), dc, ucc);
 robot_array{end+1} = ABBC(transl(-0.5,1.2,-0.5) * trotz(pi), dc, ucc);
-robot_array{end+1} = ABBC(transl(-3.0,-1.2,-0.5),dc, ucc);
+robot_array{end+1} = ABBC(transl(-3.0,1.2,-0.5) * trotz(pi),dc, ucc);
 
 RandomBrickArray = createArray(0,0,'cell');
 
-xlim([-6 0]);
-ylim([-3 2]);
+xlim([-5 -1]);
+ylim([-4 4]);
 zlim([-0.5 2]);
+axis equal;
+zlim([-0.5 2])
 
-% hold on;
-%         conveyor_belt.render();
-%         robot_ur3e.render();
-%         robot_ur3e2.render();
-%         robot_ur3e3.render();
-%         robot_ur3e4.render();
-%         robot_abbc.render();
-%         robot_abbc2.render();
-%         hold off;
-
-%rate = rateControl(30);
-%profile on -timestamp -historysize 10000000 -timer performance
 
 %% UI & E-STOP
 
